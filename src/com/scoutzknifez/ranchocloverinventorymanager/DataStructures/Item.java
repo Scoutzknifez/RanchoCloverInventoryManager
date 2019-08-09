@@ -1,6 +1,8 @@
 package com.scoutzknifez.ranchocloverinventorymanager.DataStructures;
 
-public class Item
+import com.scoutzknifez.ranchocloverinventorymanager.Interfaces.Filterable;
+
+public class Item implements Filterable
 {
     private String upc;
     private String productCode;

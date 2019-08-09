@@ -4,6 +4,7 @@ import com.scoutzknifez.ranchocloverinventorymanager.Components.SortingTable;
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Item;
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.TimeAtMoment;
 import com.scoutzknifez.ranchocloverinventorymanager.Main;
+import com.scoutzknifez.ranchocloverinventorymanager.Utils.Constants;
 import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
 
 import javax.swing.*;
@@ -78,7 +79,7 @@ public class Inventory {
     }
 
     public void createTable() {
-        inventory_table = new JTable(new SortingTable(((Main.inventoryList != null) ? Main.inventoryList.getItemList() : null)));
+        inventory_table = new JTable(new SortingTable(((Constants.inventoryList != null) ? Constants.inventoryList.getItemList() : null)));
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(inventory_table.getModel());
         inventory_table.setRowSorter(sorter);
         inventory_table.addMouseListener(getClickListener());
@@ -106,7 +107,7 @@ public class Inventory {
 
     public void updateDisplayList() {
         getInventoryTable().clearSelection();
-        displayList = Main.inventoryList.filterList(filter_box.getText());
+        displayList = Constants.inventoryList.filterList(filter_box.getText());
         ((SortingTable) inventory_table.getModel()).setDisplayedItemList(displayList);
         inventory_table.revalidate();
     }
@@ -146,7 +147,7 @@ public class Inventory {
         for(int i = lsm.getMinSelectionIndex(); i <= lsm.getMaxSelectionIndex(); i++) {
             if(lsm.isSelectedIndex(i) && (i < displayList.size())) {
                 String upc = inventory_table.getValueAt(i, 0).toString();
-                selectedItemList.add(Main.inventoryList.filterList(upc).get(0));
+                selectedItemList.add(Constants.inventoryList.filterList(upc).get(0));
             }
         }
 
@@ -160,7 +161,7 @@ public class Inventory {
 
     private ActionListener getInfoButtonListener() {
         return e -> {
-            String out = Main.inventoryList.getItemList().size() + " items in the database.";
+            String out = Constants.inventoryList.getItemList().size() + " items in the database.";
             Utils.log(out);
         };
     }
@@ -171,7 +172,7 @@ public class Inventory {
             public void mouseClicked(MouseEvent e) {
                 int row = inventory_table.rowAtPoint(e.getPoint());
                 String upc = inventory_table.getValueAt(row, 0).toString();
-                setSidebarInfo(Main.inventoryList.getItem(upc));
+                setSidebarInfo(Constants.inventoryList.getItem(upc));
             }
 
             @Override
@@ -205,12 +206,12 @@ public class Inventory {
     }
 
     public void addItemToInventory(Item item) {
-        Main.inventoryList.add(item);
+        Constants.inventoryList.add(item);
         updateDisplayList();
     }
 
     public void setItemToInventory(Item item, int index) {
-        Main.inventoryList.set(item, index);
+        Constants.inventoryList.set(item, index);
         updateDisplayList();
     }
 

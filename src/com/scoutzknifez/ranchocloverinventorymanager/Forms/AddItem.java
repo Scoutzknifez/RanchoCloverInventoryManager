@@ -76,9 +76,9 @@ public class AddItem {
                     thread.start();
                     try {
                         thread.join();
-                        ArrayList<Item> list = (ArrayList<Item>) Main.inventoryList.filterList(created.getUpc());
+                        ArrayList<Item> list = (ArrayList<Item>) Constants.inventoryList.filterList(created.getUpc());
                         if(list.size() > 0) {
-                            Main.inventoryList.remove(list.get(0));
+                            Constants.cloverInventoryList.remove(list.get(0));
                         }
                         Main.inventoryPanel.updateDisplayList();
                         isEditing = true;
@@ -166,7 +166,7 @@ public class AddItem {
 
                 if(Main.inventoryPanel.getSelectedItemList().size() > 0) {
                     Item currentItem = Main.inventoryPanel.getSelectedItemList().get(0);
-                    int index = Main.inventoryList.getItemList().indexOf(currentItem);
+                    int index = Constants.inventoryList.getItemList().indexOf(currentItem);
                     if(index >= 0)
                             Main.inventoryPanel.setItemToInventory(updated, index);
                     Main.inventoryPanel.getInventoryTable().getSelectionModel().clearSelection();
