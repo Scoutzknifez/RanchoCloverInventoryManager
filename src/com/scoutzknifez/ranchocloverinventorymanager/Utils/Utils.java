@@ -42,7 +42,7 @@ public class Utils {
         Constants.hasInternet = hasInternetConnection();
         if(Constants.hasInternet || Constants.TEST_MODE) {
             initializeFetchers();
-            //showApplication();
+            showApplication();
             scheduleListRefresh();
         } else {
             showNoInternetDialog();
@@ -712,7 +712,9 @@ public class Utils {
     }
 
     public static void log(String input) {
-        Main.inventoryPanel.setInfo(input);
+        if(Main.inventoryPanel != null) {
+            Main.inventoryPanel.setInfo(input);
+        }
     }
 
     public enum  OS {

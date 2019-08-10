@@ -16,6 +16,7 @@ public class CloverGetAllWorker extends WorkerParent implements Runnable{
     public CloverGetAllWorker() {
         super();
     }
+
     @Override
     public void run() {
         doGetAll();
