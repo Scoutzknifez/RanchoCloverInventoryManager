@@ -26,18 +26,19 @@ public class CloverGetAllWorker extends WorkerParent implements Runnable{
             boolean stillMore = true;
             int i = 0;
             while(stillMore) {
-                String[] args = new String[3];
+                String[] args = new String[4];
                 args[0] = "items/";
                 args[1] = "limit=1000";
-                args[2] = "offset=" + (i * 1000);
+                args[2] = "expand=tags,itemStock";
+                args[3] = "offset=" + (i * 1000);
                 Request request = Utils.buildRequest(RequestType.GET, args);
                 Response response = Utils.runRequest(request);
                 if(response != null) {
                     CloverItemListResponseBody cloverItemListResponseBody = Constants.OBJECT_MAPPER.readValue(response.body().string(), CloverItemListResponseBody.class);
-                    ArrayList<LinkedHashMap<String, String>> unparsedItemList = cloverItemListResponseBody.getElements();
+                    ArrayList<LinkedHashMap<String, Object>> unparsedItemList = cloverItemListResponseBody.getElements();
                     ArrayList<CloverItem> items = Utils.parseList(unparsedItemList);
                     for(CloverItem cloverItem : items) {
-                        if(cloverItem.getSku() != null)
+                        if(cloverItem.getSku() != null && !cloverItem.getSku().equals(""))
                             Constants.cloverInventoryList.add(cloverItem);
                     }
                     if(items.size() < 1000)

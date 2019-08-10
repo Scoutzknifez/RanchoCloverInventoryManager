@@ -7,6 +7,6 @@ import java.util.LinkedHashMap;
 
 @Getter
 public class CloverItemListResponseBody {
-    private ArrayList<LinkedHashMap<String, String>> elements;
+    private ArrayList<LinkedHashMap<String, Object>> elements;
     private String href;
 }

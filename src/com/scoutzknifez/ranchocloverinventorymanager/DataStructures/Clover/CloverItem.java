@@ -22,6 +22,8 @@ import java.io.Serializable;
         "priceType",
         "defaultTaxRates",
         "isRevenue",
+        "tags",
+        "itemStock",
         "modifiedTime"
 })
 
@@ -37,6 +39,8 @@ public class CloverItem implements Serializable, Filterable {
     private boolean defaultTaxRates = true;
     @JsonProperty(value="isRevenue")
     private boolean isRevenue = true;
+    private Object tags;
+    private Object itemStock;
     private long modifiedTime = 0;
 
     public CloverItem() {}
@@ -48,12 +52,14 @@ public class CloverItem implements Serializable, Filterable {
         setPrice(price);
     }
 
-    public CloverItem(String id, String name, String sku, String code, long price) {
+    public CloverItem(String id, String name, String sku, String code, long price, Object tags, Object itemStock) {
         setId(id);
         setName(name);
         setSku(sku);
         setCode(code);
         setPrice(price);
+        setTags(tags);
+        setItemStock(itemStock);
     }
 
     public boolean containsFilter(String searchTerm) {

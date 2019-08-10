@@ -41,11 +41,9 @@ public class Utils {
     public static void initializeApplication() {
         Constants.hasInternet = hasInternetConnection();
         if(Constants.hasInternet || Constants.TEST_MODE) {
-            if(WorkerHandler.fetchInventory() == Result.SUCCESS || Constants.TEST_MODE) {
-                initializeFetchers();
-                //showApplication();
-                //scheduleListRefresh();
-            }
+            initializeFetchers();
+            //showApplication();
+            scheduleListRefresh();
         } else {
             showNoInternetDialog();
         }
@@ -254,7 +252,7 @@ public class Utils {
 
     public static void loadData() {
         try {
-            ArrayList<LinkedHashMap<String, String>> map = Constants.OBJECT_MAPPER.readValue(new FileInputStream("Data.json"), ArrayList.class);
+            ArrayList<LinkedHashMap<String, Object>> map = Constants.OBJECT_MAPPER.readValue(new FileInputStream("Data.json"), ArrayList.class);
             ArrayList<CloverItem> cloverItems = parseList(map);
             for(CloverItem cloverItem : cloverItems)
                 Constants.cloverInventoryList.add(cloverItem);
@@ -457,7 +455,7 @@ public class Utils {
                 Response response = runRequest(request);
                 if(response != null) {
                     CloverItemListResponseBody cloverItemListResponseBody = Constants.OBJECT_MAPPER.readValue(response.body().string(), CloverItemListResponseBody.class);
-                    ArrayList<LinkedHashMap<String, String>> unparsedItemList = cloverItemListResponseBody.getElements();
+                    ArrayList<LinkedHashMap<String, Object>> unparsedItemList = cloverItemListResponseBody.getElements();
                     ArrayList<CloverItem> items = parseList(unparsedItemList);
                     for(CloverItem cloverItem : items) {
                         Constants.cloverInventoryList.add(cloverItem);
@@ -472,16 +470,32 @@ public class Utils {
         sortCloverItemList();
     }
 
-    public static ArrayList<CloverItem> parseList(ArrayList<LinkedHashMap<String, String>> list) {
+    public static ArrayList<CloverItem> parseList(ArrayList<LinkedHashMap<String, Object>> list) {
         ArrayList<CloverItem> cloverItems = new ArrayList<>();
 
         for(int i = list.size() - 1; i >= 0; i--) {
-            LinkedHashMap<String, String> mapping = list.get(i);
+            LinkedHashMap<String, Object> mapping = list.get(i);
 
-            String id = mapping.get("id");
-            String name = mapping.get("name");
-            String sku = mapping.get("sku");
-            String code = mapping.get("code");
+            String id = "";
+            Object idObject = mapping.get("id");
+            if(idObject instanceof String)
+                id = (String) idObject;
+
+            String name = "";
+            Object nameObject = mapping.get("name");
+            if(nameObject instanceof String)
+                name = (String) nameObject;
+
+            String sku = "";
+            Object skuObject = mapping.get("sku");
+            if(skuObject instanceof String)
+                sku = (String) skuObject;
+
+            String code = "";
+            Object codeObject = mapping.get("code");
+            if(codeObject instanceof String)
+                code = (String) codeObject;
+
             Object obj = mapping.get("price");
 
             long price;
@@ -493,8 +507,11 @@ public class Utils {
                 price = Long.parseLong(string);
             }
 
+            Object tags = mapping.get("tags");
+            Object itemStock = mapping.get("itemStock");
+
             try {
-                cloverItems.add(new CloverItem(id, name, sku, code, price));
+                cloverItems.add(new CloverItem(id, name, sku, code, price, tags, itemStock));
             } catch (Exception e) {
                 System.out.println("Could not parse item into clover Item.");
             }
@@ -687,6 +704,7 @@ public class Utils {
         executor.schedule(() -> {
             // do refresh here
             listRefresh();
+            Main.inventoryPanel.updateDisplayList();
 
             // call this method again to reschedule an update later
             scheduleListRefresh();

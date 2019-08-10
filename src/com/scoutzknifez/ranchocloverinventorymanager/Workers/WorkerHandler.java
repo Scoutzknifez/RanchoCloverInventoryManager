@@ -1,5 +1,6 @@
 package com.scoutzknifez.ranchocloverinventorymanager.Workers;
 
+import com.scoutzknifez.ranchocloverinventorymanager.Utils.Constants;
 import com.scoutzknifez.ranchocloverinventorymanager.Utils.Result;
 import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
 
@@ -7,6 +8,7 @@ public class WorkerHandler {
     public static Result fetchInventory() {
         CloverGetAllWorker cloverGetAllWorker = new CloverGetAllWorker();
         Thread thread = new Thread(cloverGetAllWorker);
+        Constants.cloverInventoryList.getObjectList().clear();
         thread.start();
         try {
             thread.join();
