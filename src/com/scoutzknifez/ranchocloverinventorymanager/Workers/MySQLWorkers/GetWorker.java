@@ -1,4 +1,4 @@
-package com.scoutzknifez.ranchocloverinventorymanager.Workers;
+package com.scoutzknifez.ranchocloverinventorymanager.Workers.MySQLWorkers;
 
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Item;
 import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;

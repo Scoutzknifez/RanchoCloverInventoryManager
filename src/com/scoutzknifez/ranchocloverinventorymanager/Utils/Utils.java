@@ -10,9 +10,9 @@ import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.RequestType;
 import com.scoutzknifez.ranchocloverinventorymanager.Forms.AddItem;
 import com.scoutzknifez.ranchocloverinventorymanager.Forms.Inventory;
 import com.scoutzknifez.ranchocloverinventorymanager.Main;
-import com.scoutzknifez.ranchocloverinventorymanager.Workers.DeleteWorker;
-import com.scoutzknifez.ranchocloverinventorymanager.Workers.GetWorker;
-import com.scoutzknifez.ranchocloverinventorymanager.Workers.WorkerHandler;
+import com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers.CloverDeleteWorker;
+import com.scoutzknifez.ranchocloverinventorymanager.Workers.MySQLWorkers.GetWorker;
+import com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers.CloverWorkerHandler;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
@@ -48,14 +48,6 @@ public class Utils {
             showNoInternetDialog();
         }
     }
-
-    public static void testUrl() {
-        String[] args = new String[2];
-        args[0] = "items/";
-        args[1] = makeFilterExactSku("730176357294");
-        System.out.println(buildUrl(args));
-    }
-
 
     public static void initializeFetchers() {
         Thread cloverTagFetcherThread = grabCloverTags();
@@ -117,9 +109,6 @@ public class Utils {
         // Posts new items that didnt exist before
         postItems();
         sortCloverItemList();
-        // Deletes items that were removed off of master
-        deleteItems();
-        sortCloverItemList();
         // updates changed items
         updateItems();
         sortCloverItemList();
@@ -168,73 +157,6 @@ public class Utils {
             ((CloverItem) Constants.cloverInventoryList.getObjectList().get(index)).setPrice(makeLong(item.getPrice()));
         } else {
             System.out.println("Updating item failed.");
-        }
-    }
-
-    public static void checkDuplicates() {
-        int index = 0;
-        while(index < Constants.cloverInventoryList.getObjectList().size() - 1) {
-            CloverItem cloverItem = (CloverItem) Constants.cloverInventoryList.get(index);
-            CloverItem nextCloverItem = (CloverItem) Constants.cloverInventoryList.get(index+1);
-            if(cloverItem.equalsSku(nextCloverItem)) {
-                // Lets delete the item (nextCloverItem) because its not unique
-                deleteItem(nextCloverItem);
-                System.out.println("Deleting item: " + nextCloverItem.getSku() + "> " + nextCloverItem.getName());
-                Constants.cloverInventoryList.getObjectList().remove(index+1);
-            } else {
-                index++;
-            }
-        }
-    }
-
-    private static void deleteItems() {
-        try {
-            int index = 0;
-            boolean isDeleting = true;
-            while(isDeleting) {
-                CloverItem cloverItem = (CloverItem) Constants.cloverInventoryList.get(index);
-                Item item = (Item) Constants.cloverInventoryList.get(index);
-
-                if(!cloverItem.equalsSku(item)) {
-                    deleteItem(cloverItem);
-                } else {
-                    index++;
-                }
-
-                if(Constants.cloverInventoryList.getObjectList().size() == index)
-                    isDeleting = false;
-            }
-        } catch (Exception e) {
-            System.out.println("Can not delete items from clover.");
-            e.printStackTrace();
-        }
-    }
-
-    private static void deleteItem(CloverItem cloverItem) {
-        if(Constants.TEST_MODE)
-            return;
-
-        if(cloverItem.getId().equalsIgnoreCase(""))
-            throw new RuntimeException("Can not delete an item with not clover ID!");
-
-        String[] args = new String[1];
-        args[0] = "items/" + cloverItem.getId();
-        Request request = buildRequest(RequestType.DELETE, args);
-        Response response = runRequest(request);
-        if(response != null) {
-            Constants.cloverInventoryList.remove(cloverItem);
-        }
-    }
-
-    public static void checkReverse() {
-        try {
-            CloverItem cloverItem = (CloverItem) Constants.cloverInventoryList.get(0);
-            Item item = (Item) Constants.cloverInventoryList.get(0);
-            if(!cloverItem.equalsItem(item)) {
-                Collections.reverse(Constants.cloverInventoryList.getObjectList());
-            }
-        } catch (Exception e) {
-            System.out.println("Failed to check if needing reverse");
         }
     }
 
@@ -410,7 +332,7 @@ public class Utils {
     }
 
     public static Thread grabCloverInventory() {
-        Thread thread = new Thread(WorkerHandler::fetchInventory);
+        Thread thread = new Thread(CloverWorkerHandler::fetchInventory);
         thread.start();
         return thread;
     }
@@ -690,7 +612,7 @@ public class Utils {
     private static int oldSize = 0;
     private static void listRefresh() {
         // update the Constants.inventoryList
-        Result result = WorkerHandler.fetchInventory();
+        Result result = CloverWorkerHandler.fetchInventory();
         if(result == Result.SUCCESS)
             Utils.log("Updated the inventory list. (Size " + oldSize + " -> " + Constants.inventoryList.getItemList().size() + ")");
         else
@@ -1011,8 +933,10 @@ public class Utils {
                 for(Item item : selectedItemList) {
                     // This thread goes to the MySQL database and deletes the selected item.
                     int really = JOptionPane.showConfirmDialog(null, "Are you REALLY sure you want to delete " + deleteString + "?", "Deletion Confirmation", JOptionPane.YES_NO_OPTION);
-                    if(really == JOptionPane.YES_OPTION)
-                        multiThreadWaiter.execute(new DeleteWorker(item.getUpc()));
+                    if(really == JOptionPane.YES_OPTION) {
+                        CloverItem cloverItem = Constants.cloverInventoryList.getCloverItem(item.getUpc());
+                        multiThreadWaiter.execute(new CloverDeleteWorker(cloverItem));
+                    }
                 }
 
                 multiThreadWaiter.shutdown();

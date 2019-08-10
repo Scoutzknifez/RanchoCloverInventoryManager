@@ -1,4 +1,4 @@
-package com.scoutzknifez.ranchocloverinventorymanager.Workers;
+package com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers;
 
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Clover.CloverItem;
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Item;
@@ -9,7 +9,7 @@ import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-public class WorkerHandler {
+public class CloverWorkerHandler {
     public static Result fetchInventory() {
         CloverGetAllWorker cloverGetAllWorker = new CloverGetAllWorker();
         Thread thread = new Thread(cloverGetAllWorker);

@@ -1,4 +1,4 @@
-package com.scoutzknifez.ranchocloverinventorymanager.Workers;
+package com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers;
 
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Clover.CloverItem;
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Clover.CloverItemListResponseBody;
@@ -11,10 +11,9 @@ import com.squareup.okhttp.Response;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-public class CloverGetAllWorker extends WorkerParent implements Runnable{
+public class CloverGetAllWorker extends CloverWorkerParent{
 
     public CloverGetAllWorker() {
-        super();
     }
 
     @Override
