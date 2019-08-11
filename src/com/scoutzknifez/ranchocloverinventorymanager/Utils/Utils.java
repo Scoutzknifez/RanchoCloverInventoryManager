@@ -106,9 +106,6 @@ public class Utils {
 
     public static void syncItems() {
         sortCloverItemList();
-        // Posts new items that didnt exist before
-        postItems();
-        sortCloverItemList();
         // updates changed items
         updateItems();
         sortCloverItemList();
@@ -202,24 +199,6 @@ public class Utils {
             }
             return 0;
         });
-    }
-
-    public static void postItems() {
-        if(Constants.TEST_MODE)
-            return;
-
-        for(int i = 0; i < Constants.cloverInventoryList.getObjectList().size(); i++) {
-            Object object = Constants.cloverInventoryList.get(i);
-            if (object instanceof Item) {
-                Item item = (Item) object;
-                if(!Constants.cloverInventoryList.contains(item.getUpc())) {
-                    CloverItem cloverItem = new CloverItem(item.getName(), item.getUpc(), item.getProductCode(), makeLong(item.getPrice()));
-                    postItem(cloverItem);
-                    System.out.println("Posted item " + i);
-                    System.out.println(cloverItem.getName());
-                }
-            }
-        }
     }
 
     public static long makeLong(double d) {
@@ -337,23 +316,6 @@ public class Utils {
         return thread;
     }
 
-    public static CloverItem postItem(CloverItem item) {
-        if(Constants.TEST_MODE)
-            return null;
-
-        Request request = buildRequest(RequestType.POST, item, "items");
-        Response response = runRequest(request);
-        try {
-            String body = response.body().string();
-            CloverItem cloverItem = Constants.OBJECT_MAPPER.readValue(body , CloverItem.class);
-            Constants.cloverInventoryList.add(cloverItem);
-            return cloverItem;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     private static Item getItemFromIndex(int index) {
         int maxSize = Constants.cloverInventoryList.getObjectList().size();
         if(index < maxSize)
@@ -364,32 +326,6 @@ public class Utils {
 
     private static String getUpcOfIndex(int index) {
         return getItemFromIndex(index).getUpc();
-    }
-
-    public static void getCloverItemListPerfectly() {
-        try {
-            for(int i = 0; i < Constants.cloverInventoryList.getObjectList().size(); i++) {
-                String[] args = new String[3];
-                args[0] = "items/";
-                args[1] = "limit=1000";
-                args[2] = makeFilterExactSku(getUpcOfIndex(i));
-                Request request = buildRequest(RequestType.GET, args);
-                Response response = runRequest(request);
-                if(response != null) {
-                    CloverItemListResponseBody cloverItemListResponseBody = Constants.OBJECT_MAPPER.readValue(response.body().string(), CloverItemListResponseBody.class);
-                    ArrayList<LinkedHashMap<String, Object>> unparsedItemList = cloverItemListResponseBody.getElements();
-                    ArrayList<CloverItem> items = parseList(unparsedItemList);
-                    for(CloverItem cloverItem : items) {
-                        Constants.cloverInventoryList.add(cloverItem);
-                    }
-                }
-                System.out.println("Currently at item " + i + "/" + Constants.cloverInventoryList.getObjectList().size());
-            }
-        } catch (Exception e) {
-            System.out.println("Could not get the perfect list!");
-            e.printStackTrace();
-        }
-        sortCloverItemList();
     }
 
     public static ArrayList<CloverItem> parseList(ArrayList<LinkedHashMap<String, Object>> list) {
@@ -439,14 +375,6 @@ public class Utils {
             }
         }
         return cloverItems;
-    }
-
-    private static String makeFilterBySku(String sku) {
-        return "filter=sku<=" + sku;
-    }
-
-    private static String makeFilterExactSku(String sku) {
-        return "filter=sku=" + sku;
     }
 
     public static void linkItemToLabel(CloverItem item, CloverTag tag) {
@@ -531,7 +459,15 @@ public class Utils {
         return buildRequest(requestType, "", apiSection);
     }
 
-    private static Request buildRequest(RequestType requestType, Object jsonable, String... apiSection) {
+    /**
+     * Used for building requests for getters and setters,
+     * directly accessed for posts ONLY
+     * @param requestType Type of request for header
+     * @param jsonable Any type of object
+     * @param apiSection arguments for html request
+     * @return
+     */
+    public static Request buildRequest(RequestType requestType, Object jsonable, String... apiSection) {
         Request.Builder builder = new Request.Builder();
         String url = buildUrl(apiSection);
         builder = builder.url(url);

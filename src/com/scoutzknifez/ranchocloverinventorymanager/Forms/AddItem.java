@@ -1,10 +1,13 @@
 package com.scoutzknifez.ranchocloverinventorymanager.Forms;
 
+import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Clover.CloverItem;
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Item;
 import com.scoutzknifez.ranchocloverinventorymanager.Main;
 import com.scoutzknifez.ranchocloverinventorymanager.Utils.Constants;
 import com.scoutzknifez.ranchocloverinventorymanager.Utils.Result;
 import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
+import com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers.CloverDeleteWorker;
+import com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers.CloverInsertWorker;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,6 +48,7 @@ public class AddItem {
 
         Inventory.itemFrame = null;
         Inventory.itemFrameIsOpen = false;
+        Main.inventoryPanel.updateDisplayList();
     }
 
     private void setCreateEditButtonFunction(boolean isAddItem) {
@@ -69,7 +73,8 @@ public class AddItem {
 
                 if(action == JOptionPane.OK_OPTION) {
                     close();
-                    Thread thread = new Thread(new DeleteWorker(created));
+                    CloverItem cloverItem = Constants.cloverInventoryList.getCloverItem(created.getUpc());
+                    Thread thread = new Thread(new CloverDeleteWorker(cloverItem));
                     thread.start();
                     try {
                         thread.join();
@@ -131,8 +136,9 @@ public class AddItem {
     private void create() {
         if(attemptCreation() == Result.SUCCESS) {
             Item created = createItem();
-            InsertWorker inserter = new InsertWorker(created);
-            Thread thread = new Thread(inserter);
+            CloverItem createdCloverItem = new CloverItem(created.getName(), created.getUpc(), created.getProductCode(), Utils.makeLong(created.getPrice()));
+            CloverInsertWorker insertWorker = new CloverInsertWorker(createdCloverItem);
+            Thread thread = new Thread(insertWorker);
             thread.start();
             try {
                 thread.join();

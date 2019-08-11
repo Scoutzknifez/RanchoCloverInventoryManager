@@ -17,6 +17,7 @@ public class CloverWorkerHandler {
         thread.start();
         try {
             thread.join();
+            Utils.saveData();
             makeItemsFromCloverList();
             return Result.SUCCESS;
         } catch(Exception e) {
@@ -66,12 +67,18 @@ public class CloverWorkerHandler {
         if(item.getItemStock() != null) {
             try {
                 LinkedHashMap<String, Object> mapping = (LinkedHashMap<String, Object>) item.getItemStock();
-                Object stockCount = mapping.get("stockCount");
-                if(stockCount instanceof Integer) {
-                    quantity = (Integer) mapping.get("stockCount");
+                Object quantityObject = mapping.get("quantity");
+                if(quantityObject instanceof Float) {
+                    quantity = Math.round((Float) quantityObject);
                 }
-                else if(stockCount instanceof String) {
-                    quantity = Integer.parseInt((String) stockCount);
+                else if(quantityObject instanceof Double) {
+                    quantity = Math.round((Float) quantityObject);
+                }
+                else if(quantityObject instanceof Integer) {
+                    quantity = (Integer) quantityObject;
+                }
+                else if(quantityObject instanceof String) {
+                    quantity = Integer.parseInt((String) quantityObject);
                 }
             } catch (Exception e) {
                 System.out.println("Could not make the quantity for item: " + item.getName());
