@@ -1,23 +1,22 @@
 package com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers;
 
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Clover.CloverItem;
-import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Clover.CloverTag;
 import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter @Getter
-public class CloverItemTagWorker extends CloverWorkerParent {
+@Getter @Setter
+public class CloverQuantityWorker extends CloverWorkerParent {
     private CloverItem cloverItem;
-    private CloverTag cloverTag;
+    private int quantity;
 
-    public CloverItemTagWorker(CloverItem cloverItem, CloverTag cloverTag) {
+    public CloverQuantityWorker(CloverItem cloverItem, int quantity) {
         setCloverItem(cloverItem);
-        setCloverTag(cloverTag);
+        setQuantity(quantity);
     }
 
     @Override
     public void run() {
-        Utils.linkItemToLabel(getCloverItem(), getCloverTag());
+        Utils.setItemQuantity(getCloverItem(), getQuantity());
     }
 }

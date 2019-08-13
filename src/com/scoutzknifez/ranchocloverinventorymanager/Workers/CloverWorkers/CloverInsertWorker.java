@@ -6,9 +6,10 @@ import com.scoutzknifez.ranchocloverinventorymanager.Utils.Constants;
 import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import lombok.Getter;
 import lombok.Setter;
 
-@Setter
+@Setter @Getter
 public class CloverInsertWorker extends CloverWorkerParent {
     private CloverItem cloverItem;
 
@@ -27,8 +28,8 @@ public class CloverInsertWorker extends CloverWorkerParent {
         Response response = Utils.runRequest(request);
         try {
             String body = response.body().string();
-            CloverItem cloverItemResponse = Constants.OBJECT_MAPPER.readValue(body , CloverItem.class);
-            Constants.cloverInventoryList.add(cloverItemResponse);
+            setCloverItem(Constants.OBJECT_MAPPER.readValue(body , CloverItem.class));
+            Constants.cloverInventoryList.add(getCloverItem());
         } catch (Exception e) {
             e.printStackTrace();
         }

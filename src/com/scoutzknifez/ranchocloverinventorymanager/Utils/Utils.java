@@ -10,9 +10,8 @@ import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.RequestType;
 import com.scoutzknifez.ranchocloverinventorymanager.Forms.AddItem;
 import com.scoutzknifez.ranchocloverinventorymanager.Forms.Inventory;
 import com.scoutzknifez.ranchocloverinventorymanager.Main;
-import com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers.CloverDeleteWorker;
+import com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers.*;
 import com.scoutzknifez.ranchocloverinventorymanager.Workers.MySQLWorkers.GetWorker;
-import com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers.CloverWorkerHandler;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
@@ -62,6 +61,66 @@ public class Utils {
             e.printStackTrace();
         }
     }
+
+    public static void postItem(Item item) {
+        CloverItem createdCloverItem = new CloverItem(item.getName(), item.getUpc(), item.getProductCode(), Utils.makeLong(item.getPrice()));
+        CloverInsertWorker insertWorker = new CloverInsertWorker(createdCloverItem);
+        Thread thread = new Thread(insertWorker);
+        thread.start();
+
+        CloverItem responseItem = null;
+        try {
+            thread.join();
+            responseItem = insertWorker.getCloverItem();
+            Main.inventoryPanel.addItemToInventory(item);
+            Main.inventoryPanel.updateDisplayList();
+        } catch(Exception ex) {
+            Utils.log("Error running the inserter thread.");
+        }
+
+        if(responseItem == null)
+            throw new RuntimeException("Item that was posted returned as null!");
+
+        CloverTag cloverTag = getBrandTag(item);
+
+        CloverItemTagWorker cloverItemTagWorker = new CloverItemTagWorker(responseItem, cloverTag);
+        Thread tagThread = new Thread(cloverItemTagWorker);
+        tagThread.start();
+
+        CloverQuantityWorker cloverQuantityWorker = new CloverQuantityWorker(responseItem, item.getQuantity());
+        Thread quantityThread = new Thread(cloverQuantityWorker);
+        quantityThread.start();
+
+        try {
+            tagThread.join();
+        } catch (Exception e) {
+            Utils.log("Error running the tagger thread.");
+        }
+
+        try {
+            quantityThread.join();
+        } catch (Exception e) {
+            Utils.log("Error running the quantity thread.");
+        }
+    }
+
+    public static CloverTag getBrandTag(Item item) {
+        if(!Constants.cloverTagList.contains(item.getBrand())) {
+            return postTag(new CloverTag(item.getBrand()));
+        }
+        return Constants.cloverTagList.getCloverTag(item.getBrand());
+    }
+
+    public static void setItemQuantity(CloverItem cloverItem, int quantity) {
+        String[] args = new String[1];
+        args[0] = "item_stocks/" + cloverItem.getId();
+        runRequest(buildRequest(RequestType.POST, getQuantityString(quantity), args));
+    }
+
+    private static Object getQuantityString(int quantity) {
+        return "{\"quantity\":" + quantity + "}";
+    }
+
     public static void printRequiredTags() {
         String listOfTags = "";
         for(Object object : Constants.cloverTagList.getObjectList()) {
@@ -205,25 +264,6 @@ public class Utils {
         return ((long) (d * 100.000005));
     }
 
-    public static void linkItems() {
-        for(int i = 0; i < Constants.cloverInventoryList.getObjectList().size(); i++) {
-            CloverItem cloverItem = (CloverItem) Constants.cloverInventoryList.get(i);
-            CloverTag cloverTag = null;
-            for(Object object : Constants.cloverInventoryList.getObjectList()) {
-                if(object instanceof Item) {
-                    Item item = (Item) object;
-                    if(cloverItem.equalsItem(item)) {
-                        cloverTag = getItemsTag(item);
-                    }
-                }
-            }
-            if(cloverTag != null) {
-                linkItemToLabel(cloverItem, cloverTag);
-                System.out.println("Linked item " + cloverItem.getName() + " (" + cloverItem.getId() + ") with " + cloverTag.getName() + " (" + cloverTag.getId() + ")");
-            }
-        }
-    }
-
     public static CloverTag getItemsTag(Item item) {
         for (Object object : Constants.cloverTagList.getObjectList()) {
             if (object instanceof CloverTag) {
@@ -285,7 +325,7 @@ public class Utils {
         for (CloverTag tag : tagList) {
             if(!Constants.cloverTagList.contains(tag.getName())) {
                 System.out.println(tag.getName());
-                postTag(tag);
+                Constants.cloverTagList.add(postTag(tag));
             }
         }
     }
@@ -380,6 +420,13 @@ public class Utils {
     public static void linkItemToLabel(CloverItem item, CloverTag tag) {
         Request request = buildRequest(RequestType.POST, getItemLabelString(item, tag), "tag_items");
         Response response = runRequest(request);
+
+        try {
+            Constants.cloverTagList.add(Constants.OBJECT_MAPPER.readValue(response.body().string(), CloverTag.class));
+        } catch (Exception e) {
+            Utils.log("Could not parse the tag response into an CloverTag.");
+        }
+
         try {
             response.body().close();
         } catch (Exception e) {
@@ -496,9 +543,15 @@ public class Utils {
         return builder.build();
     }
 
-    public static void postTag(CloverTag tag) {
+    public static CloverTag postTag(CloverTag tag) {
         Request request = buildRequest(RequestType.POST, tag, "tags");
-        runRequest(request);
+        try {
+            return Constants.OBJECT_MAPPER.readValue(runRequest(request).body().string(), CloverTag.class);
+        } catch (Exception e) {
+            System.out.println("Could not parse the response body for the returning CloverTag post.");
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static void printList(List<Object> list) {

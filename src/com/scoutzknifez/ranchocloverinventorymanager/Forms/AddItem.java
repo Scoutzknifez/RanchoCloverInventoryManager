@@ -136,17 +136,7 @@ public class AddItem {
     private void create() {
         if(attemptCreation() == Result.SUCCESS) {
             Item created = createItem();
-            CloverItem createdCloverItem = new CloverItem(created.getName(), created.getUpc(), created.getProductCode(), Utils.makeLong(created.getPrice()));
-            CloverInsertWorker insertWorker = new CloverInsertWorker(createdCloverItem);
-            Thread thread = new Thread(insertWorker);
-            thread.start();
-            try {
-                thread.join();
-                Main.inventoryPanel.addItemToInventory(created);
-                Main.inventoryPanel.updateDisplayList();
-            } catch(Exception ex) {
-                Utils.log("Error running the inserter thread.");
-            }
+            Utils.postItem(created);
         }
     }
 

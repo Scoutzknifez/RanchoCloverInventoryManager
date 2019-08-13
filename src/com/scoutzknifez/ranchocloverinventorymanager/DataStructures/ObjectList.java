@@ -1,6 +1,7 @@
 package com.scoutzknifez.ranchocloverinventorymanager.DataStructures;
 
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Clover.CloverItem;
+import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Clover.CloverTag;
 import com.scoutzknifez.ranchocloverinventorymanager.Interfaces.Filterable;
 import lombok.Setter;
 
@@ -104,6 +105,24 @@ public class ObjectList
                 }
             }
         }
+        return null;
+    }
+
+    /**
+     * Fetches a clover tag matching the brand name or tag ID
+     * @param string for comparing tags
+     * @return the cloverTag of the brand
+     */
+    public CloverTag getCloverTag(String string) {
+        for(Object object : getObjectList()) {
+            if(object instanceof CloverTag) {
+                CloverTag cloverTag = (CloverTag) object;
+                if(cloverTag.containsFilter(string)) {
+                    return cloverTag;
+                }
+            }
+        }
+
         return null;
     }
 }
