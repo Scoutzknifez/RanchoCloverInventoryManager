@@ -72,7 +72,7 @@ public class CloverWorkerHandler {
                     quantity = Math.round((Float) quantityObject);
                 }
                 else if(quantityObject instanceof Double) {
-                    quantity = Math.round((Float) quantityObject);
+                    quantity = Math.round((int) (((double) quantityObject) * 1.000005));
                 }
                 else if(quantityObject instanceof Integer) {
                     quantity = (Integer) quantityObject;

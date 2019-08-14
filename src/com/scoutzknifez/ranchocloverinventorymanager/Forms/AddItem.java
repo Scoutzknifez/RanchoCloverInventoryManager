@@ -7,7 +7,7 @@ import com.scoutzknifez.ranchocloverinventorymanager.Utils.Constants;
 import com.scoutzknifez.ranchocloverinventorymanager.Utils.Result;
 import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
 import com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers.CloverDeleteWorker;
-import com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers.CloverInsertWorker;
+import com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers.CloverUpdateWorker;
 
 import javax.swing.*;
 import java.awt.*;
@@ -151,26 +151,27 @@ public class AddItem {
         // Delete the old item, and reupload the item that was created like above
         if (attemptCreation() == Result.SUCCESS) {
             Item updated = createItem();
-            UpdateWorker updater = new UpdateWorker(updated);
-            Thread thread = new Thread(updater);
-            thread.start();
+            CloverUpdateWorker cloverUpdateWorker = new CloverUpdateWorker(updated);
+            Thread updateThread = new Thread(cloverUpdateWorker);
+            updateThread.start();
+
             try {
-                thread.join();
+                updateThread.join();
 
                 if(Main.inventoryPanel.getSelectedItemList().size() > 0) {
                     Item currentItem = Main.inventoryPanel.getSelectedItemList().get(0);
                     int index = Constants.inventoryList.getItemList().indexOf(currentItem);
                     if(index >= 0)
-                            Main.inventoryPanel.setItemToInventory(updated, index);
+                        Main.inventoryPanel.setItemToInventory(updated, index);
                     Main.inventoryPanel.getInventoryTable().getSelectionModel().clearSelection();
                     Main.inventoryPanel.getSelectedItemList().clear();
                 }
 
                 Main.inventoryPanel.getDeleteButton().setEnabled(false);
                 Main.inventoryPanel.getEditButton().setEnabled(false);
-            } catch (Exception ex) {
-                Utils.log("Error updating the item.");
-                ex.printStackTrace();
+            } catch (Exception e) {
+                Utils.log("Could not delete the item '" + updated.getName() + "' from the clover database.");
+                e.printStackTrace();
             }
         }
     }

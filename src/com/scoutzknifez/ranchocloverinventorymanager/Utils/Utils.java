@@ -41,7 +41,8 @@ public class Utils {
         Constants.hasInternet = hasInternetConnection();
         if(Constants.hasInternet || Constants.TEST_MODE) {
             initializeFetchers();
-            showApplication();
+            Main.debug();
+            // showApplication();
             scheduleListRefresh();
         } else {
             showNoInternetDialog();
@@ -102,6 +103,10 @@ public class Utils {
         } catch (Exception e) {
             Utils.log("Error running the quantity thread.");
         }
+    }
+
+    public static CloverItem getCloverItemFromItem(Item item) {
+        return Constants.cloverInventoryList.getCloverItem(item.getUpc());
     }
 
     public static CloverTag getBrandTag(Item item) {
@@ -264,18 +269,6 @@ public class Utils {
         return ((long) (d * 100.000005));
     }
 
-    public static CloverTag getItemsTag(Item item) {
-        for (Object object : Constants.cloverTagList.getObjectList()) {
-            if (object instanceof CloverTag) {
-                CloverTag cloverTag = (CloverTag) object;
-                if (cloverTag.getName().equals(item.getBrand())) {
-                    return cloverTag;
-                }
-            }
-        }
-        return new CloverTag("N/A");
-    }
-
     public static void makeNewTagsAndPost() {
         String listOfTags = "";
         for(Object object : Constants.cloverTagList.getObjectList()) {
@@ -418,7 +411,9 @@ public class Utils {
     }
 
     public static void linkItemToLabel(CloverItem item, CloverTag tag) {
-        Request request = buildRequest(RequestType.POST, getItemLabelString(item, tag), "tag_items");
+        Object string = getItemLabelString(item, tag);
+        System.out.println(string);
+        Request request = buildRequest(RequestType.POST, string, "tag_items");
         Response response = runRequest(request);
 
         try {
@@ -559,7 +554,7 @@ public class Utils {
             System.out.println(object);
     }
 
-    private static void printResponseBody(Response response) {
+    public static void printResponseBody(Response response) {
         try {
             System.out.println(response.body().string());
         } catch (Exception e) {
