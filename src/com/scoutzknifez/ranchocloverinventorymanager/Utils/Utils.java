@@ -34,7 +34,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class Utils {
     public static void initializeApplication() {
@@ -48,7 +47,7 @@ public class Utils {
         }
     }
 
-    public static void initializeFetchers() {
+    private static void initializeFetchers() {
         Thread cloverTagFetcherThread = grabCloverTags();
         Thread cloverItemFetcherThread = grabCloverInventory();
 
@@ -177,27 +176,13 @@ public class Utils {
         return ((long) (d * 100.000005));
     }
 
-    private static Map<String, Integer> sortByValue(Map<String, Integer> unsortMap, final boolean order)
-    {
-        java.util.List<Map.Entry<String, Integer>> list = new LinkedList<>(unsortMap.entrySet());
-
-        // Sorting the list based on values
-        list.sort((o1, o2) -> order ? o1.getValue().compareTo(o2.getValue()) == 0
-                ? o1.getKey().compareTo(o2.getKey())
-                : o1.getValue().compareTo(o2.getValue()) : o2.getValue().compareTo(o1.getValue()) == 0
-                ? o2.getKey().compareTo(o1.getKey())
-                : o2.getValue().compareTo(o1.getValue()));
-        return list.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> b, LinkedHashMap::new));
-
-    }
-
-    public static Thread grabCloverTags() {
+    private static Thread grabCloverTags() {
         Thread thread = new Thread(Utils::getCloverTags);
         thread.start();
         return thread;
     }
 
-    public static Thread grabCloverInventory() {
+    private static Thread grabCloverInventory() {
         Thread thread = new Thread(CloverWorkerHandler::fetchInventory);
         thread.start();
         return thread;
@@ -314,12 +299,13 @@ public class Utils {
     public static Response runRequest(Request request) {
         Response response = callRequest(request);
 
-        if(isError429(response)) {
+        if(response == null || isError429(response)) {
             try {
                 System.out.println("Calling back in a second. Currently at max connections.");
                 try {
                     response.body().close();
                 } catch (Exception e) {
+                    System.out.println("Response body could not be closed.");
                     e.printStackTrace();
                 }
                 Thread.sleep(Constants.MILLIS_IN_SECOND);
@@ -366,7 +352,7 @@ public class Utils {
      * @param requestType Type of request for header
      * @param jsonable Any type of object
      * @param apiSection arguments for html request
-     * @return
+     * @return Built up Request
      */
     public static Request buildRequest(RequestType requestType, Object jsonable, String... apiSection) {
         Request.Builder builder = new Request.Builder();
@@ -397,14 +383,12 @@ public class Utils {
         return builder.build();
     }
 
-    public static CloverTag postTag(CloverTag tag) {
+    private static CloverTag postTag(CloverTag tag) {
         Request request = buildRequest(RequestType.POST, tag, "tags");
         try {
             Response response = runRequest(request);
             String responseBody = response.body().string();
-            System.out.println(responseBody);
-            CloverTag cloverTag = Constants.OBJECT_MAPPER.readValue(responseBody, CloverTag.class);
-            return cloverTag;
+            return Constants.OBJECT_MAPPER.readValue(responseBody, CloverTag.class);
         } catch (Exception e) {
             System.out.println("Could not parse the response body for the returning CloverTag post.");
             e.printStackTrace();
@@ -550,7 +534,7 @@ public class Utils {
         addItem.getPriceField().setText("$" + item.getPrice());
         addItem.getQuantityField().setText("" + item.getQuantity());
     }
-    public static void makeNewFrame(String title, AddItem addItem) {
+    private static void makeNewFrame(String title, AddItem addItem) {
         if(Inventory.itemFrame != null && Inventory.itemFrame != addItem)
             return;
 
@@ -583,7 +567,7 @@ public class Utils {
             return fetchedItem;
         }
 
-        fetchedItem = checkDatabase(barcode, false);
+        fetchedItem = checkDatabase(barcode, true);
         if(fetchedItem != null) {
             Utils.log("Found item already existing in existing data.");
             return fetchedItem;
@@ -671,7 +655,7 @@ public class Utils {
         Utils.log("Found item data online.");
         return new Item(barcode, productCode, itemName, brand, price, quantity, description, size, color, false);
     }
-    public static Item checkDatabase(String barcode, boolean isPhysical)
+    private static Item checkDatabase(String barcode, boolean isPhysical)
     {
         GetWorker getter = new GetWorker(barcode, isPhysical);
         Thread thread = new Thread(getter);
@@ -682,7 +666,7 @@ public class Utils {
             if(getItem == null) {
                 return null;
             } else {
-                getItem.setItemIsInPhysical(isPhysical);
+                getItem.setItemIsInPhysical(false);
                 return getItem;
             }
         } catch(Exception e) {
@@ -690,7 +674,7 @@ public class Utils {
             return null;
         }
     }
-    public static Element getElementByText(Elements elements, String searched) {
+    private static Element getElementByText(Elements elements, String searched) {
         for(Element element : elements) {
             if(element.text().toLowerCase().contains(searched.toLowerCase()))
                 return element;
@@ -698,7 +682,7 @@ public class Utils {
         return null;
     }
 
-    public static void showApplication() {
+    private static void showApplication() {
         JFrame frame = new JFrame("Rancho Army-Navy Inventory");
         Main.inventoryPanel = new Inventory();
         frame.setContentPane(Main.inventoryPanel.getInventoryPanel());
@@ -717,13 +701,13 @@ public class Utils {
         manager.addKeyEventDispatcher(new ScannerListener());
         manager.addKeyEventDispatcher(new ShortcutListener());
     }
-    public static void showFrameIsOpenError() {
+    private static void showFrameIsOpenError() {
         JOptionPane.showMessageDialog(null, "You are already working on an item.", "ERROR: Item Already In Work", JOptionPane.ERROR_MESSAGE);
     }
     private static void showNoInternetDialog() {
         JOptionPane.showMessageDialog(null, "This device has no internet access.  Please check your connection and restart the application.", "ERROR: No Internet Connection", JOptionPane.ERROR_MESSAGE);
     }
-    public static boolean hasInternetConnection() {
+    private static boolean hasInternetConnection() {
         boolean status = false;
         Socket socket = new Socket();
         InetSocketAddress address = new InetSocketAddress("www.google.com", 80);
@@ -732,7 +716,6 @@ public class Utils {
             if(socket.isConnected())
                 status = true;
         } catch (Exception e) {
-            status = false;
         } finally {
             try {
                 socket.close();
@@ -740,7 +723,7 @@ public class Utils {
         }
         return status;
     }
-    public static String makeEditFrameTitle(Item item) {
+    private static String makeEditFrameTitle(Item item) {
         return Constants.EDIT_ITEM_TITLE + " '" + item.getName() + "'";
     }
     public static void makeAddItemFrame() {

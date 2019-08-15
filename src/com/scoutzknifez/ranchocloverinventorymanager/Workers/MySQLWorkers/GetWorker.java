@@ -54,7 +54,7 @@ public class GetWorker extends WorkerParent implements Runnable {
                 int quantity = set.getInt("Quantity");
                 String brand = set.getString("Brand");
                 String productCode = set.getString("product_code");
-                fetchedItem = new Item(upc, productCode, itemName, brand, price, quantity, "", "", "", isPhysical);
+                fetchedItem = new Item(upc, productCode, itemName, brand, price, quantity, "", "", "", false);
             }
             return fetchedItem;
         } catch(Exception e) {
