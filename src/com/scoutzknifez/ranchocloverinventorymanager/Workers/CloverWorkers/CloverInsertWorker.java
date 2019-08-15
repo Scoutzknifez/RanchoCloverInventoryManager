@@ -30,6 +30,7 @@ public class CloverInsertWorker extends CloverWorkerParent {
             String body = response.body().string();
             setCloverItem(Constants.OBJECT_MAPPER.readValue(body , CloverItem.class));
             Constants.cloverInventoryList.add(getCloverItem());
+            Utils.closeResponseBody(response);
         } catch (Exception e) {
             e.printStackTrace();
         }

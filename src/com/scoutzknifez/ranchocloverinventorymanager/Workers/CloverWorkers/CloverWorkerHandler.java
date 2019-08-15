@@ -37,7 +37,10 @@ public class CloverWorkerHandler {
         }
     }
 
-    private static Item makeItemFromCloverItem(CloverItem cloverItem) {
+    public static Item makeItemFromCloverItem(CloverItem cloverItem) {
+        if(cloverItem == null)
+            return null;
+
         Item item = new Item(cloverItem.getSku(), cloverItem.getCode(), cloverItem.getName(), cloverItem.getPrice());
 
         item.setBrand(getBrand(cloverItem));
@@ -55,8 +58,7 @@ public class CloverWorkerHandler {
                 LinkedHashMap<String, Object> currentTag = tagList.get(0);
                 brand = (String) currentTag.get("name");
             } catch (Exception e) {
-                System.out.println("Could not get the brand from item: " + item.getName());
-                e.printStackTrace();
+                System.out.println("Item does not have brand: " + item.getName());
             }
         }
         return brand;

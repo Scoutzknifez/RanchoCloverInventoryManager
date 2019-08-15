@@ -2,6 +2,7 @@ package com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers;
 
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Clover.CloverItem;
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Item;
+import com.scoutzknifez.ranchocloverinventorymanager.Utils.Constants;
 import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +25,8 @@ public class CloverUpdateWorker extends CloverWorkerParent {
         Thread deleterThread = new Thread(cloverDeleteWorker);
         deleterThread.start();
 
-        CloverInsertWorker cloverInsertWorker = new CloverInsertWorker(getCloverItem());
+        CloverItem newItem = new CloverItem(getItem().getName(), getItem().getUpc(), getItem().getProductCode(), Utils.makeLong(getItem().getPrice()));
+        CloverInsertWorker cloverInsertWorker = new CloverInsertWorker(newItem);
         Thread insertWorker = new Thread(cloverInsertWorker);
         insertWorker.start();
 
@@ -38,6 +40,7 @@ public class CloverUpdateWorker extends CloverWorkerParent {
         try {
             insertWorker.join();
             setCloverItem(cloverInsertWorker.getCloverItem());
+            Constants.inventoryList.add(getItem());
         } catch (Exception e) {
             Utils.log("Updater's insertion failed.");
             e.printStackTrace();
@@ -60,7 +63,7 @@ public class CloverUpdateWorker extends CloverWorkerParent {
         }
 
         try {
-            quantityThread.start();
+            quantityThread.join();
         } catch (Exception e) {
             Utils.log("Updater's quantity setter failed.");
             e.printStackTrace();
