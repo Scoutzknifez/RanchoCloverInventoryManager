@@ -251,7 +251,6 @@ public class Utils {
 
     public static void linkItemToLabel(CloverItem item, CloverTag tag) {
         Object string = getItemLabelString(item, tag);
-        System.out.println(string);
         Request request = buildRequest(RequestType.POST, string, "tag_items");
         Response response = runRequest(request);
 
