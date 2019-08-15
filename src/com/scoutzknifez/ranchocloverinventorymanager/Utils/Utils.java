@@ -41,8 +41,7 @@ public class Utils {
         Constants.hasInternet = hasInternetConnection();
         if(Constants.hasInternet || Constants.TEST_MODE) {
             initializeFetchers();
-            Main.debug();
-            // showApplication();
+            showApplication();
             scheduleListRefresh();
         } else {
             showNoInternetDialog();
@@ -119,106 +118,12 @@ public class Utils {
     public static void setItemQuantity(CloverItem cloverItem, int quantity) {
         String[] args = new String[1];
         args[0] = "item_stocks/" + cloverItem.getId();
-        runRequest(buildRequest(RequestType.POST, getQuantityString(quantity), args));
+        Response response = runRequest(buildRequest(RequestType.POST, getQuantityString(quantity), args));
+        closeResponseBody(response);
     }
 
     private static Object getQuantityString(int quantity) {
         return "{\"quantity\":" + quantity + "}";
-    }
-
-    public static void printRequiredTags() {
-        String listOfTags = "";
-        for(Object object : Constants.cloverTagList.getObjectList()) {
-            if(!listOfTags.equalsIgnoreCase(""))
-                listOfTags += ", ";
-            CloverTag cloverTag = (CloverTag) object;
-            listOfTags += cloverTag.getName();
-        }
-        System.out.println("Current Labels: " + listOfTags);
-
-        HashMap<String, Integer> brandToItemCount = new HashMap<>();
-        listOfTags = "";
-        int lineCount = 1;
-        for(Object object : Constants.cloverInventoryList.getObjectList()) {
-            Item item = (Item) object;
-            if(!Constants.cloverTagList.contains(item.getBrand())) {
-                if(!listOfTags.equalsIgnoreCase(""))
-                    listOfTags += ", ";
-
-                if(listOfTags.length() > 150 * lineCount) {
-                    listOfTags += "\n";
-                    lineCount++;
-                }
-
-                listOfTags += item.getBrand();
-                brandToItemCount.put(item.getBrand(), 1);
-            } else {
-                if(brandToItemCount.get(item.getBrand()) == null)
-                    brandToItemCount.put(item.getBrand(), 1);
-                else {
-                    int currentValue = brandToItemCount.get(item.getBrand()) + 1;
-                    brandToItemCount.put(item.getBrand(), currentValue);
-                }
-            }
-        }
-
-        Map<String, Integer> sorted = sortByValue(brandToItemCount, false);
-        for (String string : sorted.keySet()) {
-            System.out.println(string + " - " + sorted.get(string));
-        }
-    }
-
-    public static void syncItems() {
-        sortCloverItemList();
-        // updates changed items
-        updateItems();
-        sortCloverItemList();
-    }
-
-    private static void updateItems() {
-        try {
-            int index = 0;
-            while(index < Constants.cloverInventoryList.getObjectList().size()) {
-                CloverItem cloverItem = (CloverItem) Constants.cloverInventoryList.get(index);
-                Item item = (Item) Constants.cloverInventoryList.get(index);
-
-                if(cloverItem.equalsSku(item)) {
-                    if(cloverItem.needsUpdate(item)) {
-                        // Lets update with new stuff
-                        updateItem(cloverItem, item, index);
-                    }
-                } else {
-                    System.out.println("Items are off sync I guess");
-                }
-
-                index++;
-            }
-        } catch (Exception e) {
-            System.out.println("Could not update the items in clover.");
-            e.printStackTrace();
-        }
-    }
-
-    private static void updateItem(CloverItem cloverItem, Item item, int index) {
-        if(Constants.TEST_MODE)
-            return;
-
-        String[] args = new String[1];
-        args[0] = "items/" + cloverItem.getId();
-        CloverItemUpdateBody updatedCloverItemBody = new CloverItemUpdateBody(item.getName(), item.getProductCode(), makeLong(item.getPrice()));
-        Request request = buildRequest(RequestType.POST, updatedCloverItemBody, args);
-        Response response = runRequest(request);
-        if(response != null) {
-            System.out.println("Updating item:");
-            System.out.println(cloverItem.getName() + " -> " + updatedCloverItemBody.getName());
-            System.out.println(cloverItem.getCode() + " -> " + updatedCloverItemBody.getCode());
-            System.out.println(cloverItem.getPrice() + " -> " + updatedCloverItemBody.getPrice());
-            ((CloverItem) Constants.cloverInventoryList.getObjectList().get(index)).setName(item.getName());
-            ((CloverItem) Constants.cloverInventoryList.getObjectList().get(index)).setCode(item.getProductCode());
-            ((CloverItem) Constants.cloverInventoryList.getObjectList().get(index)).setPrice(makeLong(item.getPrice()));
-        } else {
-            System.out.println("Updating item failed.");
-        }
     }
 
     public static void saveData() {
@@ -252,6 +157,9 @@ public class Utils {
                 CloverItem c1 = (CloverItem) o1;
                 CloverItem c2 = (CloverItem) o2;
 
+                if(c1 == null || c2 == null || c1.getSku() == null || c2.getSku() == null)
+                    return 0;
+
                 int result = String.CASE_INSENSITIVE_ORDER.compare(c1.getSku(), c2.getSku());
                 if(result == 0) {
                     result = c1.getSku().compareTo(c2.getSku());
@@ -267,60 +175,6 @@ public class Utils {
 
     public static long makeLong(double d) {
         return ((long) (d * 100.000005));
-    }
-
-    public static void makeNewTagsAndPost() {
-        String listOfTags = "";
-        for(Object object : Constants.cloverTagList.getObjectList()) {
-            if(!listOfTags.equalsIgnoreCase(""))
-                listOfTags += ", ";
-            CloverTag cloverTag = (CloverTag) object;
-            listOfTags += cloverTag.getName();
-        }
-        System.out.println("Current Labels: " + listOfTags);
-
-        HashMap<String, Integer> brandToItemCount = new HashMap<>();
-        listOfTags = "";
-        int lineCount = 1;
-        for(Object object : Constants.cloverInventoryList.getObjectList()) {
-            Item item = (Item) object;
-            if(!Constants.cloverTagList.contains(item.getBrand())) {
-                if(!listOfTags.equalsIgnoreCase(""))
-                    listOfTags += ", ";
-
-                if(listOfTags.length() > 150 * lineCount) {
-                    listOfTags += "\n";
-                    lineCount++;
-                }
-
-                listOfTags += item.getBrand();
-                brandToItemCount.put(item.getBrand(), 1);
-            } else {
-                if(brandToItemCount.get(item.getBrand()) == null)
-                    brandToItemCount.put(item.getBrand(), 1);
-                else {
-                    int currentValue = brandToItemCount.get(item.getBrand()) + 1;
-                    brandToItemCount.put(item.getBrand(), currentValue);
-                }
-            }
-        }
-
-        Map<String, Integer> sorted = sortByValue(brandToItemCount, false);
-
-        java.util.List<CloverTag> tagList = new ArrayList<>();
-        for (String string : sorted.keySet()) {
-            System.out.println(string + " - " + sorted.get(string));
-            tagList.add(new CloverTag(string));
-        }
-
-
-        System.out.println("Labels to create:");
-        for (CloverTag tag : tagList) {
-            if(!Constants.cloverTagList.contains(tag.getName())) {
-                System.out.println(tag.getName());
-                Constants.cloverTagList.add(postTag(tag));
-            }
-        }
     }
 
     private static Map<String, Integer> sortByValue(Map<String, Integer> unsortMap, final boolean order)
@@ -416,12 +270,10 @@ public class Utils {
         Request request = buildRequest(RequestType.POST, string, "tag_items");
         Response response = runRequest(request);
 
-        try {
-            Constants.cloverTagList.add(Constants.OBJECT_MAPPER.readValue(response.body().string(), CloverTag.class));
-        } catch (Exception e) {
-            Utils.log("Could not parse the tag response into an CloverTag.");
-        }
+        closeResponseBody(response);
+    }
 
+    public static void closeResponseBody(Response response) {
         try {
             response.body().close();
         } catch (Exception e) {
@@ -429,11 +281,13 @@ public class Utils {
         }
     }
 
-    public static void getCloverTags() {
+    public static Result getCloverTags() {
         String[] args = new String[2];
         args[0] = "tags";
         args[1] = "limit=1000";
         Request request = buildRequest(RequestType.GET, args);
+
+        Constants.cloverTagList.getObjectList().clear();
         Response response = runRequest(request);
         if(response != null) {
             try {
@@ -445,11 +299,16 @@ public class Utils {
                     boolean showInReporting = Boolean.parseBoolean(mapping.get("showInReporting"));
                     Constants.cloverTagList.add(new CloverTag(id, name, showInReporting));
                 }
+
+                return Result.SUCCESS;
             } catch(Exception e) {
                 System.out.println("Could not parse the clover tag list.");
                 e.printStackTrace();
             }
         }
+        closeResponseBody(response);
+
+        return Result.FAILURE;
     }
 
     public static Response runRequest(Request request) {
@@ -541,7 +400,11 @@ public class Utils {
     public static CloverTag postTag(CloverTag tag) {
         Request request = buildRequest(RequestType.POST, tag, "tags");
         try {
-            return Constants.OBJECT_MAPPER.readValue(runRequest(request).body().string(), CloverTag.class);
+            Response response = runRequest(request);
+            String responseBody = response.body().string();
+            System.out.println(responseBody);
+            CloverTag cloverTag = Constants.OBJECT_MAPPER.readValue(responseBody, CloverTag.class);
+            return cloverTag;
         } catch (Exception e) {
             System.out.println("Could not parse the response body for the returning CloverTag post.");
             e.printStackTrace();
@@ -594,9 +457,19 @@ public class Utils {
     }
 
     private static int oldSize = 0;
+    private static int oldTagSize = 0;
     private static void listRefresh() {
+        // update the Constants.cloverTagList
+        Result result = getCloverTags();
+        if(result == Result.SUCCESS)
+            Utils.log("Updated the tag list. (Size " + oldTagSize + " -> " + Constants.cloverTagList.getObjectList().size() + ")");
+        else
+            Utils.log("Failed to update the tag list as scheduled.");
+
+        oldTagSize = Constants.cloverTagList.getObjectList().size();
+
         // update the Constants.inventoryList
-        Result result = CloverWorkerHandler.fetchInventory();
+        result = CloverWorkerHandler.fetchInventory();
         if(result == Result.SUCCESS)
             Utils.log("Updated the inventory list. (Size " + oldSize + " -> " + Constants.inventoryList.getItemList().size() + ")");
         else
@@ -703,18 +576,26 @@ public class Utils {
             showNoInternetDialog();
 
         barcode = barcode.trim();
-        Item fetchedItem = checkDatabase(barcode, true);
+        Item fetchedItem = Constants.inventoryList.getItem(barcode);
         if(fetchedItem != null) {
-            System.out.println("found in the actual db");
+            fetchedItem.setItemIsInPhysical(true);
+            Utils.log("Could item already existing in inventory.");
             return fetchedItem;
         }
+
         fetchedItem = checkDatabase(barcode, false);
         if(fetchedItem != null) {
-            System.out.println("found in the whole db");
+            Utils.log("Found item already existing in existing data.");
             return fetchedItem;
         }
-        String url = Constants.WEBSITE + barcode;
 
+        fetchedItem = checkDatabase(barcode, false);
+        if(fetchedItem != null) {
+            Utils.log("Found item already existing in backup data.");
+            return fetchedItem;
+        }
+
+        String url = Constants.WEBSITE + barcode;
         Document doc;
         String itemName = "";
         double price = 0;
@@ -786,6 +667,8 @@ public class Utils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        Utils.log("Found item data online.");
         return new Item(barcode, productCode, itemName, brand, price, quantity, description, size, color, false);
     }
     public static Item checkDatabase(String barcode, boolean isPhysical)
