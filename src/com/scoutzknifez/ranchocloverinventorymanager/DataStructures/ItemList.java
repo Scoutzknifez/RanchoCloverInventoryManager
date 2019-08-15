@@ -22,7 +22,11 @@ public class ItemList
     }
 
     public Item getItem(String filter) {
-        return filterList(filter).get(0);
+        List<Item> filteredList = filterList(filter);
+        if(filteredList.size() > 0) {
+            return filteredList.get(0);
+        }
+        return null;
     }
 
     public List<Item> getItemList() {
