@@ -1,4 +1,4 @@
-package com.scoutzknifez.ranchocloverinventorymanager.Utils;
+package com.scoutzknifez.ranchocloverinventorymanager.Utility;
 
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectWriter;

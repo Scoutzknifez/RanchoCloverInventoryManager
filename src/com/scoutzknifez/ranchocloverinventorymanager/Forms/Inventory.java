@@ -4,8 +4,8 @@ import com.scoutzknifez.ranchocloverinventorymanager.Components.SortingTable;
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Item;
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.TimeAtMoment;
 import com.scoutzknifez.ranchocloverinventorymanager.Main;
-import com.scoutzknifez.ranchocloverinventorymanager.Utils.Constants;
-import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
+import com.scoutzknifez.ranchocloverinventorymanager.Utility.Constants;
+import com.scoutzknifez.ranchocloverinventorymanager.Utility.Utils;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

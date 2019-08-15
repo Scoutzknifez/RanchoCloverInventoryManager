@@ -1,7 +1,7 @@
 package com.scoutzknifez.ranchocloverinventorymanager.Workers.MySQLWorkers;
 
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Item;
-import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
+import com.scoutzknifez.ranchocloverinventorymanager.Utility.Utils;
 
 import java.sql.ResultSet;
 

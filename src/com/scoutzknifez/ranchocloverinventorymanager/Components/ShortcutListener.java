@@ -1,7 +1,7 @@
 package com.scoutzknifez.ranchocloverinventorymanager.Components;
 
 import com.scoutzknifez.ranchocloverinventorymanager.Main;
-import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
+import com.scoutzknifez.ranchocloverinventorymanager.Utility.Utils;
 
 import javax.swing.*;
 import java.awt.*;

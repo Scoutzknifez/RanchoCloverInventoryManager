@@ -2,8 +2,8 @@ package com.scoutzknifez.ranchocloverinventorymanager.Components;
 
 import com.scoutzknifez.ranchocloverinventorymanager.Forms.Inventory;
 import com.scoutzknifez.ranchocloverinventorymanager.Main;
-import com.scoutzknifez.ranchocloverinventorymanager.Utils.Constants;
-import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
+import com.scoutzknifez.ranchocloverinventorymanager.Utility.Constants;
+import com.scoutzknifez.ranchocloverinventorymanager.Utility.Utils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;

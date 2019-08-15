@@ -2,8 +2,8 @@ package com.scoutzknifez.ranchocloverinventorymanager.Workers.CloverWorkers;
 
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Clover.CloverItem;
 import com.scoutzknifez.ranchocloverinventorymanager.DataStructures.Item;
-import com.scoutzknifez.ranchocloverinventorymanager.Utils.Constants;
-import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
+import com.scoutzknifez.ranchocloverinventorymanager.Utility.Constants;
+import com.scoutzknifez.ranchocloverinventorymanager.Utility.Utils;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,8 +1,8 @@
 package com.scoutzknifez.ranchocloverinventorymanager.Workers.MySQLWorkers;
 
-import com.scoutzknifez.ranchocloverinventorymanager.Utils.Constants;
-import com.scoutzknifez.ranchocloverinventorymanager.Utils.Result;
-import com.scoutzknifez.ranchocloverinventorymanager.Utils.Utils;
+import com.scoutzknifez.ranchocloverinventorymanager.Utility.Constants;
+import com.scoutzknifez.ranchocloverinventorymanager.Utility.Result;
+import com.scoutzknifez.ranchocloverinventorymanager.Utility.Utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
