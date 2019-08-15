@@ -37,8 +37,7 @@ public class CloverItem implements Serializable, Filterable {
     private long price;
     private String priceType = "FIXED";
     private boolean defaultTaxRates = true;
-    @JsonProperty(value="isRevenue")
-    private boolean isRevenue = true;
+    @JsonProperty(value="isRevenue") private boolean isRevenue = true;
     private Object tags;
     private Object itemStock;
     private long modifiedTime = 0;
