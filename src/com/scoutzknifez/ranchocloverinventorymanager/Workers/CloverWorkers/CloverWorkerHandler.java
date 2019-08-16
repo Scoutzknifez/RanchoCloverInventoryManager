@@ -17,7 +17,7 @@ public class CloverWorkerHandler {
         thread.start();
         try {
             thread.join();
-            Utils.saveData();
+            // Utils.saveData();
             makeItemsFromCloverList();
             return Result.SUCCESS;
         } catch(Exception e) {
