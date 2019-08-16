@@ -553,6 +553,7 @@ public class Utils {
 
         itemJFrame.setVisible(true);
     }
+
     private static Item lookupItem(String barcode)
     {
         if(!Constants.hasInternet)

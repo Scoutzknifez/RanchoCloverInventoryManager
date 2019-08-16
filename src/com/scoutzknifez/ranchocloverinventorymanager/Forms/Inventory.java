@@ -12,6 +12,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.event.*;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -161,9 +163,23 @@ public class Inventory {
 
     private ActionListener getInfoButtonListener() {
         return e -> {
-            String out = Constants.inventoryList.getItemList().size() + " items in the database.";
+            String worth = "$" + getInventoryWorth();
+            while(worth.contains(".") && worth.split("\\.")[1].length() < 2)
+                worth += "0";
+
+            String out = Constants.inventoryList.getItemList().size() + " items in the database. Gross valued inventory at " + worth;
             Utils.log(out);
         };
+    }
+
+    private double getInventoryWorth() {
+        long worth = 0;
+        for(Item item : Constants.inventoryList.getItemList()) {
+            if(item.getQuantity() > 0)
+                worth += Utils.makeLong(item.getPrice()) * item.getQuantity();
+        }
+
+        return Math.round(worth * 100.0) / 10000.0;
     }
 
     private MouseListener getClickListener() {
