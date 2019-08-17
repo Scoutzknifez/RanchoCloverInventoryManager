@@ -387,7 +387,9 @@ public class Utils {
         try {
             Response response = runRequest(request);
             String responseBody = response.body().string();
-            return Constants.OBJECT_MAPPER.readValue(responseBody, CloverTag.class);
+            CloverTag madeTag = Constants.OBJECT_MAPPER.readValue(responseBody, CloverTag.class);
+            Constants.cloverTagList.add(madeTag);
+            return madeTag;
         } catch (Exception e) {
             System.out.println("Could not parse the response body for the returning CloverTag post.");
             e.printStackTrace();
